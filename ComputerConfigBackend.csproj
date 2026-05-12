@@ -22,9 +22,7 @@
     <Folder Include="Application\Common\Exeptions\" />
     <Folder Include="Application\Common\Helpers\" />
     <Folder Include="Application\Common\Interfaces\" />
-    <Folder Include="Application\DTOs\" />
     <Folder Include="Infrastructure\Filters\" />
-    <Folder Include="Infrastructure\Middleware\" />
     <Folder Include="Infrastructure\Presistence\" />
     <Folder Include="Infrastructure\Presistence\Repositories\" />
   </ItemGroup>

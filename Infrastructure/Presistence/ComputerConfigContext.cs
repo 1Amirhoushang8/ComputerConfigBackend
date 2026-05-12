@@ -12,6 +12,7 @@ public class ComputerConfigContext : DbContext
     public DbSet<Worker> Workers => Set<Worker>();
     public DbSet<Admin> Admins => Set<Admin>();
     public DbSet<Ticket> Tickets => Set<Ticket>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();  
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -68,9 +69,23 @@ public class ComputerConfigContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(t => t.Worker)
-                .WithMany()
+                .WithMany(w => w.Tickets)
                 .HasForeignKey(t => t.WorkerId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ----- AuditLogs -----
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.HasIndex(a => a.Timestamp);
+            entity.HasIndex(a => a.UserId);
+
+            entity.Property(a => a.UserId).HasMaxLength(50);
+            entity.Property(a => a.UserRole).HasMaxLength(30);
+            entity.Property(a => a.UserName).HasMaxLength(150);
+            entity.Property(a => a.HttpMethod).HasMaxLength(10);
+            entity.Property(a => a.Path).HasMaxLength(300);
+            entity.Property(a => a.IpAddress).HasMaxLength(45);
         });
     }
 }

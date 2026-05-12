@@ -148,6 +148,9 @@ app.UseRateLimiter();
 app.UseCors(MyAllowSpecificOrigins);
 
 app.UseAuthentication();
+
+app.UseMiddleware<Infrastructure.Middleware.AuditLoggingMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();

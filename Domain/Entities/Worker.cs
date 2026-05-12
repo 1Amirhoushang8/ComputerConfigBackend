@@ -10,4 +10,7 @@ public class Worker
     public string PasswordHash { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+   
+    public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 }

@@ -30,6 +30,10 @@ public class AuthController : ControllerBase
     [EnableRateLimiting("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
+        // Validate the model
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var (user, role) = await _authService.AuthenticateAsync(request.PhoneNumber, request.Password);
         if (user == null)
             return Unauthorized("شماره تلفن یا رمز عبور اشتباه است.");
@@ -54,20 +58,19 @@ public class AuthController : ControllerBase
                 break;
         }
 
-        // Generate the JWT and send it as an httpOnly cookie
         var token = _tokenService.GenerateToken(userId, fullName, role, phone);
 
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,               
+            Secure = true,
             SameSite = SameSiteMode.Lax,
             Expires = DateTime.UtcNow.AddHours(8)
         };
 
         Response.Cookies.Append("auth_token", token, cookieOptions);
 
-        // Return only the user info (no token in body)
+        // Return user info (no token in body)
         return Ok(new LoginResponse
         {
             FullName = fullName,
@@ -79,7 +82,6 @@ public class AuthController : ControllerBase
     [Authorize]
     public IActionResult Me()
     {
-        // Extract claims from the JWT (already validated by authentication middleware)
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var fullName = User.FindFirstValue(ClaimTypes.Name);
         var role = User.FindFirstValue(ClaimTypes.Role);
@@ -98,7 +100,6 @@ public class AuthController : ControllerBase
     [Authorize]
     public IActionResult Logout()
     {
-        // Clear the cookie
         Response.Cookies.Delete("auth_token");
         return Ok(new { message = "با موفقیت خارج شدید." });
     }
@@ -106,6 +107,10 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
+        // Validate the model
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         if (request.Role == "admin" || request.Role == "worker")
         {
             if (!User.IsInRole("admin"))
