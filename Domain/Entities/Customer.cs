@@ -9,4 +9,7 @@ public class Customer
     public string PersonalId { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    
+    public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 }

@@ -8,6 +8,7 @@ public class Worker
     public string Email { get; set; } = string.Empty;
     public string PersonalId { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
+    public string Specialty { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

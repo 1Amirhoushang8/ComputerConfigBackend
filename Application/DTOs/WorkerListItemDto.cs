@@ -8,6 +8,8 @@ public class WorkerListItemDto
     public string PersonalId { get; set; } = string.Empty;
     public int ActiveTicketCount { get; set; }
 
-   
+    public string Email { get; set; } = string.Empty;
+
+    public string Specialty { get; set; } = string.Empty;
     public string CurrentStatus => ActiveTicketCount > 0 ? "فعال" : "غیرفعال";
 }

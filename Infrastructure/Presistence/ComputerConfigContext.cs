@@ -23,6 +23,7 @@ public class ComputerConfigContext : DbContext
             entity.HasIndex(c => c.Email).IsUnique();
             entity.HasIndex(c => c.PersonalId).IsUnique();
 
+
             entity.Property(c => c.FullName).HasMaxLength(150).IsRequired();
             entity.Property(c => c.PhoneNumber).HasMaxLength(20).IsRequired();
             entity.Property(c => c.Email).HasMaxLength(200);
@@ -42,6 +43,7 @@ public class ComputerConfigContext : DbContext
             entity.Property(w => w.Email).HasMaxLength(200);
             entity.Property(w => w.PersonalId).HasMaxLength(30).IsRequired();
             entity.Property(w => w.PasswordHash).IsRequired();
+            entity.Property(w => w.Specialty).HasMaxLength(100).IsRequired();   
         });
 
         // ----- Admins -----
@@ -64,7 +66,7 @@ public class ComputerConfigContext : DbContext
             entity.HasIndex(t => t.TrackingCode).IsUnique();
 
             entity.HasOne(t => t.Customer)
-                .WithMany()
+                .WithMany(c => c.Tickets)         
                 .HasForeignKey(t => t.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade);
 

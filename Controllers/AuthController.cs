@@ -30,7 +30,6 @@ public class AuthController : ControllerBase
     [EnableRateLimiting("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        // Validate the model
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
@@ -70,7 +69,6 @@ public class AuthController : ControllerBase
 
         Response.Cookies.Append("auth_token", token, cookieOptions);
 
-        // Return user info (no token in body)
         return Ok(new LoginResponse
         {
             FullName = fullName,
@@ -104,12 +102,16 @@ public class AuthController : ControllerBase
         return Ok(new { message = "با موفقیت خارج شدید." });
     }
 
+    // Inside Register method
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        // Validate the model
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+
+        // Require specialty for workers
+        if (request.Role == "worker" && string.IsNullOrWhiteSpace(request.Specialty))
+            return BadRequest("تخصص الزامی است.");
 
         if (request.Role == "admin" || request.Role == "worker")
         {
@@ -123,6 +125,16 @@ public class AuthController : ControllerBase
         if (phoneExists)
             return BadRequest("این شماره تلفن قبلاً ثبت شده است.");
 
+        // Email uniqueness check – only if email is provided
+        if (!string.IsNullOrWhiteSpace(request.Email))
+        {
+            bool emailExists = await _context.Admins.AnyAsync(a => a.Email == request.Email)
+                            || await _context.Workers.AnyAsync(w => w.Email == request.Email)
+                            || await _context.Customers.AnyAsync(c => c.Email == request.Email);
+            if (emailExists)
+                return BadRequest("این ایمیل قبلاً ثبت شده است.");
+        }
+
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
         switch (request.Role)
@@ -132,7 +144,7 @@ public class AuthController : ControllerBase
                 {
                     FullName = request.FullName,
                     PhoneNumber = request.PhoneNumber,
-                    Email = request.Email,
+                    Email = request.Email ?? string.Empty,
                     PersonalId = request.PersonalId,
                     PasswordHash = passwordHash
                 });
@@ -142,10 +154,11 @@ public class AuthController : ControllerBase
                 {
                     FullName = request.FullName,
                     PhoneNumber = request.PhoneNumber,
-                    Email = request.Email,
+                    Email = request.Email ?? string.Empty,
                     PersonalId = request.PersonalId,
                     PasswordHash = passwordHash,
-                    IsActive = true
+                    IsActive = true,
+                    Specialty = request.Specialty ?? string.Empty
                 });
                 break;
             default:
@@ -153,7 +166,7 @@ public class AuthController : ControllerBase
                 {
                     FullName = request.FullName,
                     PhoneNumber = request.PhoneNumber,
-                    Email = request.Email,
+                    Email = request.Email ?? string.Empty,
                     PersonalId = request.PersonalId,
                     PasswordHash = passwordHash
                 });

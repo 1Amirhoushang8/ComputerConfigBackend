@@ -19,7 +19,6 @@ public class WorkersController : ControllerBase
         _context = context;
     }
 
-    // GET /api/workers → returns ALL workers (no filter)
     [HttpGet]
     public async Task<ActionResult<List<WorkerListItemDto>>> GetWorkers()
     {
@@ -30,6 +29,8 @@ public class WorkersController : ControllerBase
                 FullName = w.FullName,
                 PhoneNumber = w.PhoneNumber,
                 PersonalId = w.PersonalId,
+                Email = w.Email,    
+                Specialty = w.Specialty,
                 ActiveTicketCount = w.Tickets.Count(t => t.Status != TicketStatus.Delivered)
             })
             .ToListAsync();
@@ -37,7 +38,6 @@ public class WorkersController : ControllerBase
         return Ok(workers);
     }
 
-    // GET /api/workers/{id}
     [HttpGet("{id}")]
     public async Task<ActionResult<WorkerListItemDto>> GetWorker(int id)
     {
@@ -49,6 +49,8 @@ public class WorkersController : ControllerBase
                 FullName = w.FullName,
                 PhoneNumber = w.PhoneNumber,
                 PersonalId = w.PersonalId,
+                Email = w.Email,
+                Specialty = w.Specialty,
                 ActiveTicketCount = w.Tickets.Count(t => t.Status != TicketStatus.Delivered)
             })
             .FirstOrDefaultAsync();
@@ -59,7 +61,6 @@ public class WorkersController : ControllerBase
         return Ok(worker);
     }
 
-    // PUT /api/workers/{id}
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateWorker(int id, [FromBody] UpdateWorkerDto dto)
     {
@@ -70,27 +71,32 @@ public class WorkersController : ControllerBase
         if (worker == null)
             return NotFound("تعمیرکار یافت نشد.");
 
-        // Uniqueness checks (excluding current worker)
+        // Uniqueness checks (only when actual values are provided)
         bool phoneConflict = await _context.Workers
             .AnyAsync(w => w.Id != id && w.PhoneNumber == dto.PhoneNumber);
         if (phoneConflict)
             return BadRequest("این شماره موبایل قبلاً ثبت شده است.");
 
-        bool emailConflict = await _context.Workers
-            .AnyAsync(w => w.Id != id && !string.IsNullOrEmpty(dto.Email) && w.Email == dto.Email);
-        if (emailConflict)
-            return BadRequest("این ایمیل قبلاً ثبت شده است.");
+        
+        if (!string.IsNullOrWhiteSpace(dto.Email))
+        {
+            bool emailConflict = await _context.Workers
+                .AnyAsync(w => w.Id != id && w.Email == dto.Email);
+            if (emailConflict)
+                return BadRequest("این ایمیل قبلاً ثبت شده است.");
+        }
 
         bool personalIdConflict = await _context.Workers
             .AnyAsync(w => w.Id != id && w.PersonalId == dto.PersonalId);
         if (personalIdConflict)
             return BadRequest("این کد ملی قبلاً ثبت شده است.");
 
-        // Update fields – IsActive is left unchanged
+        // Update fields
         worker.FullName = dto.FullName;
         worker.PhoneNumber = dto.PhoneNumber;
-        worker.Email = dto.Email;
+        worker.Email = dto.Email ?? string.Empty;   
         worker.PersonalId = dto.PersonalId;
+        worker.Specialty = dto.Specialty;
 
         await _context.SaveChangesAsync();
         return Ok(new { message = "اطلاعات تعمیرکار با موفقیت بروزرسانی شد." });
