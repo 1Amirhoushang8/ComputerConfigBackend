@@ -12,7 +12,11 @@ public class ComputerConfigContext : DbContext
     public DbSet<Worker> Workers => Set<Worker>();
     public DbSet<Admin> Admins => Set<Admin>();
     public DbSet<Ticket> Tickets => Set<Ticket>();
-    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();  
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
+    public DbSet<DeletedWorker> DeletedWorkers => Set<DeletedWorker>();
+
+    public DbSet<DeletedCustomer> DeletedCustomers => Set<DeletedCustomer>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -75,6 +79,40 @@ public class ComputerConfigContext : DbContext
                 .HasForeignKey(t => t.WorkerId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
+
+
+
+        // ----- DeletedWorkers -----
+        modelBuilder.Entity<DeletedWorker>(entity =>
+        {
+            entity.HasIndex(d => d.OriginalWorkerId);
+            entity.HasIndex(d => d.DeletedAt);
+
+            entity.Property(d => d.FullName).HasMaxLength(150).IsRequired();
+            entity.Property(d => d.PhoneNumber).HasMaxLength(20).IsRequired();
+            entity.Property(d => d.Email).HasMaxLength(200);
+            entity.Property(d => d.PersonalId).HasMaxLength(30).IsRequired();
+            entity.Property(d => d.Specialty).HasMaxLength(100);
+        });
+
+
+
+        
+
+        // Inside OnModelCreating
+        modelBuilder.Entity<DeletedCustomer>(entity =>
+        {
+        entity.HasIndex(d => d.OriginalCustomerId);
+        entity.HasIndex(d => d.DeletedAt);
+
+        entity.Property(d => d.FullName).HasMaxLength(150).IsRequired();
+        entity.Property(d => d.PhoneNumber).HasMaxLength(20).IsRequired();
+        entity.Property(d => d.Email).HasMaxLength(200);
+        entity.Property(d => d.PersonalId).HasMaxLength(30).IsRequired();
+        });
+
+
+
 
         // ----- AuditLogs -----
         modelBuilder.Entity<AuditLog>(entity =>

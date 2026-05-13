@@ -101,4 +101,38 @@ public class WorkersController : ControllerBase
         await _context.SaveChangesAsync();
         return Ok(new { message = "اطلاعات تعمیرکار با موفقیت بروزرسانی شد." });
     }
+
+
+
+    // DELETE /api/workers/{id}
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteWorker(int id)
+    {
+        var worker = await _context.Workers.FindAsync(id);
+        if (worker == null)
+            return NotFound("تعمیرکار یافت نشد.");
+
+        // Archive the worker first
+        var deleted = new DeletedWorker
+        {
+            OriginalWorkerId = worker.Id,
+            FullName = worker.FullName,
+            PhoneNumber = worker.PhoneNumber,
+            Email = worker.Email,
+            PersonalId = worker.PersonalId,
+            Specialty = worker.Specialty,
+            WasActive = worker.IsActive,
+            DeletedAt = DateTime.UtcNow
+        };
+        _context.DeletedWorkers.Add(deleted);
+
+        // Remove the original worker
+        _context.Workers.Remove(worker);
+
+        await _context.SaveChangesAsync();
+        return Ok(new { message = "تعمیرکار با موفقیت حذف شد." });
+    }
 }
+
+
+
