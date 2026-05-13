@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Domain.Entities;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -35,5 +36,34 @@ public class CustomersController : ControllerBase
             .ToListAsync();
 
         return Ok(customers);
+    }
+
+
+    // DELETE /api/customers/{id} – admin only
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> DeleteCustomer(int id)
+    {
+        var customer = await _context.Customers.FindAsync(id);
+        if (customer == null)
+            return NotFound("مشتری یافت نشد.");
+
+        // Archive the customer
+        var deleted = new DeletedCustomer
+        {
+            OriginalCustomerId = customer.Id,
+            FullName = customer.FullName,
+            PhoneNumber = customer.PhoneNumber,
+            Email = customer.Email,
+            PersonalId = customer.PersonalId,
+            DeletedAt = DateTime.UtcNow
+        };
+        _context.DeletedCustomers.Add(deleted);
+
+        // Remove the original
+        _context.Customers.Remove(customer);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "مشتری با موفقیت حذف شد." });
     }
 }
