@@ -16,6 +16,8 @@ public class ComputerConfigContext : DbContext
 
     public DbSet<DeletedWorker> DeletedWorkers => Set<DeletedWorker>();
 
+    public DbSet<DeletedTicket> DeletedTickets => Set<DeletedTicket>();
+
     public DbSet<DeletedCustomer> DeletedCustomers => Set<DeletedCustomer>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -126,6 +128,15 @@ public class ComputerConfigContext : DbContext
             entity.Property(a => a.HttpMethod).HasMaxLength(10);
             entity.Property(a => a.Path).HasMaxLength(300);
             entity.Property(a => a.IpAddress).HasMaxLength(45);
+        });
+
+
+        modelBuilder.Entity<DeletedTicket>(entity =>
+        {
+            entity.HasIndex(d => d.OriginalTicketId);
+            entity.HasIndex(d => d.DeletedAt);
+            entity.Property(d => d.Title).HasMaxLength(300).IsRequired();
+            entity.Property(d => d.TrackingCode).HasMaxLength(50).IsRequired();
         });
     }
 }

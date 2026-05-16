@@ -29,9 +29,12 @@ public class WorkersController : ControllerBase
                 FullName = w.FullName,
                 PhoneNumber = w.PhoneNumber,
                 PersonalId = w.PersonalId,
-                Email = w.Email,    
+                Email = w.Email,
                 Specialty = w.Specialty,
-                ActiveTicketCount = w.Tickets.Count(t => t.Status != TicketStatus.Delivered)
+                // Active = not Repaired and not Cancelled
+                ActiveTicketCount = w.Tickets.Count(t =>
+                    t.Status != TicketStatus.Repaired &&
+                    t.Status != TicketStatus.Cancelled)
             })
             .ToListAsync();
 
@@ -51,7 +54,10 @@ public class WorkersController : ControllerBase
                 PersonalId = w.PersonalId,
                 Email = w.Email,
                 Specialty = w.Specialty,
-                ActiveTicketCount = w.Tickets.Count(t => t.Status != TicketStatus.Delivered)
+                // Active = not Repaired and not Cancelled
+                ActiveTicketCount = w.Tickets.Count(t =>
+                    t.Status != TicketStatus.Repaired &&
+                    t.Status != TicketStatus.Cancelled)
             })
             .FirstOrDefaultAsync();
 
@@ -77,7 +83,6 @@ public class WorkersController : ControllerBase
         if (phoneConflict)
             return BadRequest("این شماره موبایل قبلاً ثبت شده است.");
 
-        
         if (!string.IsNullOrWhiteSpace(dto.Email))
         {
             bool emailConflict = await _context.Workers
@@ -94,15 +99,13 @@ public class WorkersController : ControllerBase
         // Update fields
         worker.FullName = dto.FullName;
         worker.PhoneNumber = dto.PhoneNumber;
-        worker.Email = dto.Email ?? string.Empty;   
+        worker.Email = dto.Email ?? string.Empty;
         worker.PersonalId = dto.PersonalId;
         worker.Specialty = dto.Specialty;
 
         await _context.SaveChangesAsync();
         return Ok(new { message = "اطلاعات تعمیرکار با موفقیت بروزرسانی شد." });
     }
-
-
 
     // DELETE /api/workers/{id}
     [HttpDelete("{id}")]
@@ -133,6 +136,3 @@ public class WorkersController : ControllerBase
         return Ok(new { message = "تعمیرکار با موفقیت حذف شد." });
     }
 }
-
-
-
