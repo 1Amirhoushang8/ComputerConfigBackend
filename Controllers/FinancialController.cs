@@ -31,7 +31,8 @@ public class FinancialController : ControllerBase
                 Amount = r.Amount,
                 DateTime = r.DateTime,
                 TicketTrackingCode = r.Ticket != null ? r.Ticket.TrackingCode : null,
-                Description = r.Description
+                Description = r.Description,
+                Type = r.Type,
             })
             .ToListAsync();
 
@@ -51,6 +52,7 @@ public class FinancialController : ControllerBase
             DateTime = dto.DateTime,
             TicketId = dto.TicketId,
             Description = dto.Description,
+            Type = dto.Type,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -76,6 +78,7 @@ public class FinancialController : ControllerBase
         record.DateTime = dto.DateTime;
         record.TicketId = dto.TicketId;
         record.Description = dto.Description;
+        record.Type = dto.Type;
         record.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
@@ -101,6 +104,7 @@ public class FinancialController : ControllerBase
             DateTime = record.DateTime,
             TicketId = record.TicketId,
             Description = record.Description,
+            Type = record.Type,
             DeletedAt = DateTime.UtcNow
         };
         _context.DeletedFinancialRecords.Add(deleted);

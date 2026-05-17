@@ -12,6 +12,16 @@ public class FinancialRecord
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-    
+    public string Type { get; set; } = FinancialType.Payment;
     public Ticket? Ticket { get; set; }
+}
+
+
+
+public static class FinancialType
+{
+    public const string Payment = "پرداخت";
+    public const string Receive = "دریافت";
+
+    public static readonly string[] All = { Payment, Receive };
 }

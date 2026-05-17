@@ -25,6 +25,8 @@ public class ComputerConfigContext : DbContext
 
     public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
 
+    public DbSet<CustomerRequest> CustomerRequests => Set<CustomerRequest>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // ----- Customers -----
@@ -170,6 +172,22 @@ public class ComputerConfigContext : DbContext
             entity.HasIndex(o => new { o.PhoneNumber, o.Code });
             entity.Property(o => o.PhoneNumber).HasMaxLength(20).IsRequired();
             entity.Property(o => o.Code).HasMaxLength(10).IsRequired();
+        });
+
+
+
+        modelBuilder.Entity<CustomerRequest>(entity =>
+        {
+            entity.HasOne(cr => cr.Customer)
+                  .WithMany()
+                  .HasForeignKey(cr => cr.CustomerId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(cr => cr.Ticket)
+                  .WithMany()
+                  .HasForeignKey(cr => cr.TicketId)
+                  .OnDelete(DeleteBehavior.SetNull);
+            entity.Property(cr => cr.Message).HasMaxLength(1000).IsRequired();
+            entity.Property(cr => cr.CreatedBy).HasMaxLength(100);
         });
 
 

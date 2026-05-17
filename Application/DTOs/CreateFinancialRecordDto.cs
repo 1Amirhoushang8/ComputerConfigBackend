@@ -7,4 +7,5 @@ public class CreateFinancialRecordDto
     public DateTime DateTime { get; set; }
     public int? TicketId { get; set; }
     public string Description { get; set; } = string.Empty;
+    public string Type { get; set; } = "پرداخت";
 }

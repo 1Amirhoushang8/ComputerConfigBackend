@@ -22,7 +22,9 @@ public class TicketsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<TicketListItemDto>>> GetTickets(
         [FromQuery] string? search,
-        [FromQuery] string? status)
+        [FromQuery] string? status,
+        [FromQuery] int? customerId)
+
     {
         IQueryable<Ticket> query = _context.Tickets
             .Include(t => t.Customer)
