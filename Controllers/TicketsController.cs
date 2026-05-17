@@ -135,7 +135,13 @@ public class TicketsController : ControllerBase
         ticket.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "وضعیت با موفقیت بروزرسانی شد." });
+        
+        await _context.Entry(ticket).Reference(t => t.Customer).LoadAsync();
+        if (ticket.WorkerId != null)
+            await _context.Entry(ticket).Reference(t => t.Worker).LoadAsync();
+
+        return Ok(MapToDto(ticket));  
+
     }
 
     [HttpPut("{id}")]
