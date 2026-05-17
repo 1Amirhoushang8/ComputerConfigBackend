@@ -57,14 +57,14 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<AuthService>();
 
-// CORS (must be before Build)
+// CORS – frontend on HTTPS
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
         policy =>
         {
-            policy.WithOrigins("https://localhost:5173")   
+            policy.WithOrigins("https://localhost:5173")   // <-- HTTPS origin
                   .AllowCredentials()
                   .AllowAnyHeader()
                   .AllowAnyMethod();
@@ -103,11 +103,25 @@ builder.Services.AddSwaggerGen(c =>
 // ----- Rate Limiter (before Build) -----
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter(policyName: "login", config =>
+    options.AddFixedWindowLimiter("login", config =>
     {
         config.PermitLimit = 5;
         config.Window = TimeSpan.FromMinutes(1);
         config.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        config.QueueLimit = 0;
+    });
+
+    options.AddFixedWindowLimiter("send-otp", config =>
+    {
+        config.PermitLimit = 3;
+        config.Window = TimeSpan.FromMinutes(1);
+        config.QueueLimit = 0;
+    });
+
+    options.AddFixedWindowLimiter("verify-otp", config =>
+    {
+        config.PermitLimit = 5;
+        config.Window = TimeSpan.FromMinutes(1);
         config.QueueLimit = 0;
     });
 });
@@ -142,10 +156,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Middleware order: Rate limiter before CORS / Auth
-app.UseRateLimiter();
-
+// CORS BEFORE RateLimiter so blocked requests still get CORS headers
 app.UseCors(MyAllowSpecificOrigins);
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 

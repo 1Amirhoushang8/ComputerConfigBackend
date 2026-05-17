@@ -23,6 +23,8 @@ public class ComputerConfigContext : DbContext
 
     public DbSet<DeletedCustomer> DeletedCustomers => Set<DeletedCustomer>();
 
+    public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // ----- Customers -----
@@ -160,6 +162,14 @@ public class ComputerConfigContext : DbContext
             entity.Property(d => d.Amount).HasColumnType("decimal(18,2)").IsRequired();
             entity.HasIndex(d => d.OriginalRecordId);
             entity.HasIndex(d => d.DeletedAt);
+        });
+
+
+        modelBuilder.Entity<OtpCode>(entity =>
+        {
+            entity.HasIndex(o => new { o.PhoneNumber, o.Code });
+            entity.Property(o => o.PhoneNumber).HasMaxLength(20).IsRequired();
+            entity.Property(o => o.Code).HasMaxLength(10).IsRequired();
         });
 
 
