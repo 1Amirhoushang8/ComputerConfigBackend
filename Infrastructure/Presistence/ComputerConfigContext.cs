@@ -14,6 +14,9 @@ public class ComputerConfigContext : DbContext
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
+    public DbSet<FinancialRecord> FinancialRecords => Set<FinancialRecord>();
+    public DbSet<DeletedFinancialRecord> DeletedFinancialRecords => Set<DeletedFinancialRecord>();
+
     public DbSet<DeletedWorker> DeletedWorkers => Set<DeletedWorker>();
 
     public DbSet<DeletedTicket> DeletedTickets => Set<DeletedTicket>();
@@ -138,5 +141,27 @@ public class ComputerConfigContext : DbContext
             entity.Property(d => d.Title).HasMaxLength(300).IsRequired();
             entity.Property(d => d.TrackingCode).HasMaxLength(50).IsRequired();
         });
+
+
+        modelBuilder.Entity<FinancialRecord>(entity =>
+        {
+            entity.Property(f => f.Title).HasMaxLength(300).IsRequired();
+            entity.Property(f => f.Amount).HasColumnType("decimal(18,2)").IsRequired();
+            entity.HasOne(f => f.Ticket)
+                  .WithMany()
+                  .HasForeignKey(f => f.TicketId)
+                  .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(f => f.DateTime);
+        });
+
+        modelBuilder.Entity<DeletedFinancialRecord>(entity =>
+        {
+            entity.Property(d => d.Title).HasMaxLength(300).IsRequired();
+            entity.Property(d => d.Amount).HasColumnType("decimal(18,2)").IsRequired();
+            entity.HasIndex(d => d.OriginalRecordId);
+            entity.HasIndex(d => d.DeletedAt);
+        });
+
+
     }
 }
